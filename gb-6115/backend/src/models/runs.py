@@ -14,4 +14,6 @@ runs = Table(
     Column("result", JSON(none_as_null=True), nullable=True),
     Column("failure", String(320), nullable=True),
     Column("digest", String(64), nullable=True),
+    # 仅让 SQLite 验收库也使用单调 id（删行后不复用批次号）；PostgreSQL 本就由序列保证。
+    sqlite_autoincrement=True,
 )

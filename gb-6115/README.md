@@ -43,6 +43,15 @@ docker compose up -d --build --wait
 
 选用「ovens-retirement-1124.json」对应的演示资料，保存一份复演资料，再以默认参数 12 提交。worker 保存结果摘要、业务明细和 SHA-256。复核员登录后在「证书回执」签署。
 
+## 冷档迁档与腾库
+
+已签署的成功批次可逐步迁入冷档：冷档用唯一的原批次号（`cold_archives.run_id` 唯一）保存回执正文、签字和 SHA-256 摘要，并用一次独立读回逐项核对；三项全部一致才在**单个事务**里把冷档置为 `active` 并删除旧库的 `runs/reviews`。中断后重试按同一 `run_id` upsert，不新增副本；可选的文件副本写到 `COLD_ARCHIVE_DIR`（compose 中为共享卷 `/var/lib/workbench/cold/batch-<批次号>.json`），同样只有一份确定文件名。
+
+- 证书回执页新增「按原批次号查询回执」，迁档后 `GET /runs/{id}`、`/runs/{id}/review`、`/runs/{id}/export` 与 `GET /receipts/{批次号}` 都会整体回落到冷档，导出结构不变；页面用「旧库 / 冷档」标记来源并展示回执、签字、摘要三项核对结果。
+- `POST /runs/{id}/archive` 执行幂等迁档；`POST /archives/migrate`（可带 `{"limit":n}` 或 `{"run_id":id}`）逐步批量迁；`POST /archives/{id}/verify`、`POST /archives/{id}/purge` 分别只核对、按严格闸门清理；`GET /archives` 列冷档。另有 `/archive(s)`、`/cold-archive(s)`、`/batches/{批次号}` 等路径别名。
+- 演练资料仅当 `GET /cases/{id}/references` 的 `hot_batches=0`（最后一个引用批次已迁档并清行）时，才允许 `DELETE /cases/{id}` 或 `POST /cases/{id}/cleanup`；迁档不删资料，期间仍可 `POST /cases/{id}/runs` 发起新批次，新批次会重新阻止资料清理。冷档 `case_id` 不设外键，资料清理后回执仍可按原批次号查询。
+- 前端新增「冷档库」页（批量迁入、冷档列表、跳回原批次回执）与资料目录的「冷档清理」操作。验收与自检记录见 [TESTING.md](TESTING.md)。
+
 ## 开发说明
 
 | 部分 | 实现 |

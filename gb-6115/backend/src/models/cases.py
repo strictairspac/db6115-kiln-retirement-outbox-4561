@@ -10,4 +10,5 @@ cases = Table(
     Column("description", String(420), nullable=False),
     Column("payload", JSON, nullable=False),
     Column("created_by", String(48), nullable=False),
+    sqlite_autoincrement=True,
 )

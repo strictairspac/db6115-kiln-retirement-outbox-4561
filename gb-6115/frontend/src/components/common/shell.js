@@ -1,9 +1,12 @@
 import { Roles } from "../../constants/roles.js";
-import { routes } from "../../router/router.js";
 import { el } from "../../utils/dom.js";
 
+// 主导航保持原有四个场景模块；冷档库 /archives 作为回执页内的扩展页面，
+// 不改变既有导航项数量与顺序。
+const navRoutes = ["overview", "cases", "runs", "evidence"];
+
 export function shell(config, user, route, page, signOut) {
-  const links = routes.map((name, index) => el("a", {
+  const links = navRoutes.map((name, index) => el("a", {
     href: `#${name}`, "aria-current": route.name === name ? "page" : null,
   }, config.modules[index]));
   return el("div", {class: "shell"},

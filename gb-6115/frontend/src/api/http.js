@@ -14,6 +14,6 @@ export async function request(path, {method = "GET", data, raw = false, signal} 
   }
   const detail = Array.isArray(error.detail)
     ? error.detail.map(entry => entry.msg).join("；")
-    : error.detail;
+    : (error.detail && typeof error.detail === "object" ? error.detail.message : error.detail);
   throw new Error(detail || `请求失败（${response.status}）`);
 }
